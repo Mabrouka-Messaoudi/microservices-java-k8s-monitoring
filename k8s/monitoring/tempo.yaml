@@ -54,14 +54,14 @@ spec:
         app: tempo
     spec:
       nodeSelector:
-        role: monitoring
+        kubernetes.io/hostname: k8s-worker2   # same as prometheus, loki, grafana
       containers:
         - name: tempo
           image: grafana/tempo:2.2.2
           args: ["-config.file=/etc/tempo.yaml"]
           ports:
-            - containerPort: 3100   # Tempo API
-            - containerPort: 9411   # Zipkin receiver
+            - containerPort: 3100   # Grafana queries here
+            - containerPort: 9411   # Spring Boot services send spans here
           volumeMounts:
             - name: tempo-config
               mountPath: /etc/tempo.yaml
@@ -98,3 +98,32 @@ spec:
     - name: zipkin
       port: 9411
       targetPort: 9411
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-tempo-datasource
+  namespace: monitoring
+  labels:
+    grafana_datasource: "1"
+data:
+  tempo-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://tempo:3100
+        access: proxy
+        isDefault: false
+        jsonData:
+          httpMethod: GET
+          tracesToLogsV2:
+            datasourceUid: loki
+            spanStartTimeShift: '-1h'
+            spanEndTimeShift: '1h'
+            tags:
+              - key: service.name
+                value: application
+          serviceMap:
+            datasourceUid: prometheus
