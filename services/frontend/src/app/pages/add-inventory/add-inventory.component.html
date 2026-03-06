@@ -1,0 +1,150 @@
+<div class="nexshop-page">
+
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Add <span class="page-title-accent">Inventory</span></h2>
+      <p class="page-subtitle">Register stock for a product SKU</p>
+    </div>
+    <button class="btn-ghost" (click)="goBack()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:5px">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+      Back
+    </button>
+  </div>
+
+  @if (inventoryCreated) {
+    <div class="form-success">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+      Inventory entry added successfully!
+    </div>
+  }
+
+  @if (submitFailed) {
+    <div class="alert alert-error" style="margin-bottom:1.5rem">
+      <div class="alert-dot"></div>
+      Failed to add inventory — please check your input and try again.
+    </div>
+  }
+
+  <div class="form-section">
+    <div class="form-card">
+
+      <!-- Visual header inside card -->
+      <div class="inv-card-header">
+        <div class="inv-icon-wrap">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V11"/>
+          </svg>
+        </div>
+        <div>
+          <div class="inv-card-title">Stock Entry</div>
+          <div class="inv-card-sub">Link a SKU to an available quantity</div>
+        </div>
+      </div>
+
+      <div class="inv-divider"></div>
+
+      <form [formGroup]="addInventoryForm" (ngSubmit)="onSubmit()">
+
+        <!-- SKU Code -->
+        <div class="form-group">
+          <label class="form-label" for="skuCode">SKU Code</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <path d="M17 17h.01M14 14h3v3"/>
+              </svg>
+            </span>
+            <input
+              type="text"
+              id="skuCode"
+              formControlName="skuCode"
+              class="form-control input-with-icon"
+              placeholder="e.g. iphone_15"
+              [class.form-control-error]="skuCode?.invalid && (skuCode?.dirty || skuCode?.touched)"
+            />
+          </div>
+          @if (skuCode?.invalid && (skuCode?.dirty || skuCode?.touched)) {
+            <div class="form-error">
+              @if (skuCode?.errors?.['required']) { SKU Code is required. }
+              @if (skuCode?.errors?.['minlength']) { SKU Code must be at least 3 characters. }
+            </div>
+          }
+        </div>
+
+        <!-- Quantity -->
+        <div class="form-group">
+          <label class="form-label" for="quantity">Quantity in Stock</label>
+          <div class="qty-field-wrap">
+            <div class="qty-stepper">
+              <button
+                type="button"
+                class="qty-step-btn"
+                (click)="quantity?.setValue((quantity?.value || 0) - 1)"
+                [disabled]="(quantity?.value || 0) <= 1"
+              >−</button>
+            </div>
+            <input
+              type="number"
+              id="quantity"
+              formControlName="quantity"
+              class="form-control qty-center-input"
+              placeholder="0"
+              min="1"
+              [class.form-control-error]="quantity?.invalid && (quantity?.dirty || quantity?.touched)"
+            />
+            <div class="qty-stepper">
+              <button
+                type="button"
+                class="qty-step-btn"
+                (click)="quantity?.setValue((quantity?.value || 0) + 1)"
+              >+</button>
+            </div>
+          </div>
+          @if (quantity?.invalid && (quantity?.dirty || quantity?.touched)) {
+            <div class="form-error">
+              @if (quantity?.errors?.['required']) { Quantity is required. }
+              @if (quantity?.errors?.['min']) { Quantity must be at least 1. }
+            </div>
+          }
+        </div>
+
+        <!-- Preview pill -->
+        @if (skuCode?.valid && quantity?.valid) {
+          <div class="inv-preview">
+            <span class="inv-preview-label">Preview</span>
+            <span class="inv-preview-sku">{{ skuCode?.value }}</span>
+            <span class="inv-preview-arrow">→</span>
+            <span class="inv-preview-qty">{{ quantity?.value }} units</span>
+          </div>
+        }
+
+        <button
+          type="submit"
+          class="btn-primary btn-full"
+          [disabled]="addInventoryForm.invalid || isSubmitting"
+        >
+          @if (isSubmitting) {
+            <svg class="spin" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            Saving…
+          } @else {
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path d="M20 6L9 17l-5-5"/>
+            </svg>
+            Add to Inventory
+          }
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+</div>

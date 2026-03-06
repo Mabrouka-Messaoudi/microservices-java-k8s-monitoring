@@ -1,0 +1,103 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: nexshop
+  labels:
+    app: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      nodeSelector:
+        role: app
+      initContainers:
+        - name: wait-for-keycloak
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z keycloak 8080; do echo waiting for keycloak; sleep 5; done']
+        - name: wait-for-order-service
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z order-service 8081; do echo waiting for order-service; sleep 3; done']
+      containers:
+        - name: api-gateway
+          image: YOUR_DOCKERHUB_USERNAME/api-gateway:latest  # replaced by deploy.sh
+          ports:
+            - containerPort: 9000
+          env:
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI
+              valueFrom:
+                configMapKeyRef:
+                  name: nexshop-config
+                  key: KEYCLOAK_ISSUER_URI
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK-SET-URI
+              valueFrom:
+                configMapKeyRef:
+                  name: nexshop-config
+                  key: KEYCLOAK_JWK_URI
+            - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: nexshop-config
+                  key: ZIPKIN_ENDPOINT
+            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+              value: "1.0"
+            - name: MANAGEMENT_OBSERVATIONS_KEY-VALUES_APPLICATION
+              value: "api-gateway"
+            - name: SERVER_PORT
+              value: "9000"
+            # Route destinations (override application.properties defaults)
+            - name: PRODUCT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nexshop-config
+                  key: PRODUCT_SERVICE_URL
+            - name: ORDER_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nexshop-config
+                  key: ORDER_SERVICE_URL
+            - name: INVENTORY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nexshop-config
+                  key: INVENTORY_URL
+          resources:
+            requests:
+              cpu: 150m
+              memory: 384Mi
+            limits:
+              cpu: 400m
+              memory: 768Mi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9000
+            initialDelaySeconds: 40
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9000
+            initialDelaySeconds: 90
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: nexshop
+spec:
+  selector:
+    app: api-gateway
+  type: NodePort
+  ports:
+    - port: 9000
+      targetPort: 9000
+      nodePort: 30900

@@ -1,0 +1,31 @@
+<nav class="nexshop-nav">
+  <a href="/" class="nav-brand">
+    <div class="nav-brand-icon">N×</div>
+    <span class="nav-brand-name">Nex<span class="nav-brand-accent">Shop</span></span>
+  </a>
+
+  <div class="nav-right">
+    <button
+      id="menu-toggle"
+      type="button"
+      class="nav-hamburger md:hidden"
+    >
+      <span class="sr-only">Open main menu</span>
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+      </svg>
+    </button>
+
+    <div class="nav-menu" id="mobile-menu">
+      @if (isAuthenticated) {
+        <div class="nav-user">
+          <div class="nav-avatar">{{ username.charAt(0).toUpperCase() }}</div>
+          <span class="nav-username">{{ username }}</span>
+        </div>
+        <a (click)="logout()" class="btn-ghost">Logout</a>
+      } @else {
+        <a (click)="login()" class="btn-ghost">Login</a>
+      }
+    </div>
+  </div>
+</nav>

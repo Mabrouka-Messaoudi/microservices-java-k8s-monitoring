@@ -1,0 +1,9 @@
+scripts/secrets.env
+**/target/
+**/.idea/
+**/*.iml
+**/tempo-data/
+**/mysql/data/
+**/volume-data/
+.DS_Store
+*.log

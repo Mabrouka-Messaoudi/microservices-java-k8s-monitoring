@@ -1,0 +1,77 @@
+<main class="nexshop-page">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Products <span class="page-title-count">({{ products.length }})</span></h1>
+      <p class="page-subtitle">Browse and order from the catalog</p>
+    </div>
+    @if (isAuthenticated) {
+      <div style="display:flex; gap:0.75rem; align-items:center;">
+        <button class="btn-ghost" (click)="goToAddInventoryPage()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="display:inline;vertical-align:middle;margin-right:5px">
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 10V11"/>
+          </svg>
+          Add Inventory
+        </button>
+        <button class="btn-primary" (click)="goToCreateProductPage()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Create Product
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (products.length > 0) {
+
+    @if (orderSuccess) {
+      <div class="alert alert-success">
+        <div class="alert-dot"></div>
+        Order placed successfully — we'll notify you shortly.
+      </div>
+    } @else if (orderFailed) {
+      <div class="alert alert-error">
+        <div class="alert-dot"></div>
+        @if (quantityIsNull) {
+          Quantity cannot be null — please enter a valid quantity.
+        } @else {
+          Order failed — please try again later.
+        }
+      </div>
+    }
+
+    <div class="product-grid">
+      @for (product of products; track product.id) {
+        <div class="product-card">
+          <div class="card-badge">{{ product.skuCode }}</div>
+          <div class="card-name">{{ product.name }}</div>
+          <div class="card-price"><sup>$</sup>{{ product.price }}</div>
+          <div class="card-order-row">
+            <div class="qty-input-wrap">
+              <span class="qty-label">QTY</span>
+              <input type="number" class="qty-input" #quantityInput min="1" placeholder="1"/>
+            </div>
+            <button class="btn-order" (click)="orderProduct(product, quantityInput.value)">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+              Order
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+  } @else if (products.length === 100) {
+    <p class="load-more-hint">
+      Click <a class="load-more-link">Load More</a> to see more products
+    </p>
+  } @else {
+    <div class="empty-state">
+      <span class="empty-icon">📦</span>
+      <h3>No products found!</h3>
+    </div>
+  }
+
+</main>

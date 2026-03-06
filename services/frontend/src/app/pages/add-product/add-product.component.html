@@ -1,0 +1,118 @@
+<div class="nexshop-page">
+
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Add <span class="page-title-accent">Product</span></h2>
+      <p class="page-subtitle">Fill in the details to list a new item</p>
+    </div>
+  </div>
+
+  @if (productCreated) {
+    <div class="form-success">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path d="M20 6L9 17l-5-5"/>
+      </svg>
+      Product created successfully!
+    </div>
+  }
+
+  <div class="form-section">
+    <div class="form-card">
+      <form [formGroup]="addProductForm" (ngSubmit)="onSubmit()">
+
+        <!-- SKU Code -->
+        <div class="form-group">
+          <label class="form-label" for="skuCode">SKU Code</label>
+          <input
+            type="text"
+            id="skuCode"
+            formControlName="skuCode"
+            class="form-control"
+            placeholder="e.g. SKU-0042"
+            [class.form-control-error]="skuCode?.invalid && (skuCode?.dirty || skuCode?.touched)"
+          />
+          @if (skuCode?.invalid && (skuCode?.dirty || skuCode?.touched)) {
+            <div class="form-error">
+              @if (skuCode?.errors?.['required']) { SKU Code is required. }
+              @if (skuCode?.errors?.['minlength']) { SKU Code must be at least 3 characters long. }
+            </div>
+          }
+        </div>
+
+        <!-- Name -->
+        <div class="form-group">
+          <label class="form-label" for="name">Product Name</label>
+          <input
+            type="text"
+            id="name"
+            formControlName="name"
+            class="form-control"
+            placeholder="e.g. Wireless Headphones"
+            [class.form-control-error]="name?.invalid && (name?.dirty || name?.touched)"
+          />
+          @if (name?.invalid && (name?.dirty || name?.touched)) {
+            <div class="form-error">
+              @if (name?.errors?.['required']) { Name is required. }
+              @if (name?.errors?.['minlength']) { Name must be at least 3 characters long. }
+            </div>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="description">Description</label>
+          <textarea
+            id="description"
+            formControlName="description"
+            class="form-control"
+            placeholder="Describe the product in at least 10 characters…"
+            [class.form-control-error]="description?.invalid && (description?.dirty || description?.touched)"
+          ></textarea>
+          @if (description?.invalid && (description?.dirty || description?.touched)) {
+            <div class="form-error">
+              @if (description?.errors?.['required']) { Description is required. }
+              @if (description?.errors?.['minlength']) { Description must be at least 10 characters long. }
+            </div>
+          }
+        </div>
+
+        <!-- Price -->
+        <div class="form-group">
+          <label class="form-label" for="price">Price</label>
+          <div class="price-wrap">
+            <span class="price-prefix">$</span>
+            <input
+              type="number"
+              id="price"
+              formControlName="price"
+              class="form-control price-input"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              [class.form-control-error]="price?.invalid && (price?.dirty || price?.touched)"
+            />
+          </div>
+          @if (price?.invalid && (price?.dirty || price?.touched)) {
+            <div class="form-error">
+              @if (price?.errors?.['required']) { Price is required. }
+              @if (price?.errors?.['min']) { Price must be greater than 0. }
+            </div>
+          }
+        </div>
+
+        <button
+          type="submit"
+          class="btn-primary btn-full"
+          [disabled]="addProductForm.invalid"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+          Add Product
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+</div>
