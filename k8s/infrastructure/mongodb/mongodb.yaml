@@ -61,11 +61,14 @@ spec:
             limits:
               cpu: 300m
               memory: 512Mi
+          # ── FIX : TCP check au lieu de mongosh sans auth ──
           readinessProbe:
-            exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            tcpSocket:
+              port: 27017
             initialDelaySeconds: 20
+            timeoutSeconds: 5
             periodSeconds: 10
+            failureThreshold: 3
       volumes:
         - name: mongodb-data
           persistentVolumeClaim:

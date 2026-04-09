@@ -20,9 +20,8 @@ echo "============================================="
 # ── 0. Label nodes ────────────────────────────────────────────────────────────
 echo ""
 echo "[1/8] Labelling nodes..."
-kubectl label node k8s-worker1 role=app       --overwrite 2>/dev/null || true
-kubectl label node k8s-worker2 role=monitoring --overwrite 2>/dev/null || true
-
+kubectl label node k8s2-worker2 role=app --overwrite
+kubectl label node k8s2-worker3 role=app --overwrite
 # ── 1. Namespaces ────────────────────────────────────────────────────────────
 echo "[2/8] Creating namespaces..."
 kubectl apply -f "$K8S/namespaces/namespaces.yaml"

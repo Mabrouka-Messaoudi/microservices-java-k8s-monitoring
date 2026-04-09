@@ -7,3 +7,4 @@ scripts/secrets.env
 **/volume-data/
 .DS_Store
 *.log
+kubectl
