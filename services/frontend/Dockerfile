@@ -1,27 +1,25 @@
-# ── Stage 1: Build Angular ────────────────────────────────────────────────────
+# Stage 1 — Build Angular
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Cache npm dependencies
 COPY package.json package-lock.json ./
-RUN npm ci --silent
 
-# Copy source and build for production
+# Installer Angular CLI globalement + dépendances du projet
+RUN npm install -g @angular/cli@18 && npm ci --silent
+
 COPY . .
-RUN npm run build -- --configuration=production
 
-# ── Stage 2: Serve with Nginx ─────────────────────────────────────────────────
+RUN ng build --configuration=production
+
+# Stage 2 — Nginx
 FROM nginx:1.25-alpine
 
-# Remove default nginx config
 RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built Angular app
 COPY --from=builder /app/dist/*/browser /usr/share/nginx/html
 
-EXPOSE 80
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 80
+CMD ["/docker-entrypoint.sh"]

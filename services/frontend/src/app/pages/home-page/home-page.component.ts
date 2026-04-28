@@ -29,15 +29,12 @@ export class HomePageComponent implements OnInit {
   orderFailed = false;
 
   ngOnInit(): void {
-    // Track auth state for UI (show/hide buttons etc.)
     this.oidcSecurityService.isAuthenticated$.subscribe(
       ({isAuthenticated}) => {
         this.isAuthenticated = isAuthenticated;
       }
     );
 
-    // Load products only AFTER token is ready — filter(true) + take(1) prevents
-    // double-loading and prevents the 401 from firing before auth completes
     this.oidcSecurityService.isAuthenticated$
       .pipe(
         filter(({isAuthenticated}) => isAuthenticated),
@@ -57,8 +54,36 @@ export class HomePageComponent implements OnInit {
   goToCreateProductPage() {
     this.router.navigateByUrl('/add-product');
   }
+
   goToAddInventoryPage(): void {
     this.router.navigate(['/add-inventory']);
+  }
+
+  private getUserDetailsFromToken(): { email: string, firstName: string, lastName: string } {
+    try {
+      const storage = sessionStorage.length > 0 ? sessionStorage : localStorage;
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key && (key.includes('access_token') || key.includes('accesstoken'))) {
+          const raw = storage.getItem(key) as string;
+          const tokenStr = raw.startsWith('"') ? JSON.parse(raw) : raw;
+          if (tokenStr && (tokenStr as string).split('.').length === 3) {
+            const parts = (tokenStr as string).split('.');
+            const payload = JSON.parse(atob(parts[1])) as Record<string, any>;
+            if (payload['email'] || payload['preferred_username']) {
+              return {
+                email: payload['email'] || payload['preferred_username'] || 'user@nexshop.com',
+                firstName: payload['given_name'] || payload['name'] || 'User',
+                lastName: payload['family_name'] || ''
+              };
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not parse token', e);
+    }
+    return { email: 'user@nexshop.com', firstName: 'User', lastName: 'NexShop' };
   }
 
   orderProduct(product: Product, quantity: string) {
@@ -69,12 +94,21 @@ export class HomePageComponent implements OnInit {
       return;
     }
 
-    this.oidcSecurityService.userData$.pipe(take(1)).subscribe(result => {
-      const userDetails = {
-        email: result.userData.email,
-        firstName: result.userData.given_name,
-        lastName: result.userData.family_name
-      };
+    this.orderFailed = false;
+    this.orderSuccess = false;
+    this.oidcSecurityService.getAccessToken().pipe(take(1)).subscribe(token => {
+      let userDetails = { email: 'user@nexshop.com', firstName: 'User', lastName: 'NexShop' };
+      if (token && typeof token === 'string' && token.split('.').length === 3) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, any>;
+          userDetails = {
+            email: payload['email'] || payload['preferred_username'] || 'user@nexshop.com',
+            firstName: payload['given_name'] || payload['name'] || 'User',
+            lastName: payload['family_name'] || ''
+          };
+        } catch (e) { console.warn('token parse error', e); }
+      }
+      console.log('User details from token:', userDetails);
 
       const order: Order = {
         skuCode: product.skuCode,

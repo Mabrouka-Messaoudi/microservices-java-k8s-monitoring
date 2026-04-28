@@ -12,10 +12,12 @@ export interface InventoryRequest {
 })
 export class InventoryService {
 
-  private apiUrl = 'http://10.10.10.11:30900/api/inventory';
+  private apiUrl: string;
 
-
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    const env = (window as any).__ENV__ || {};
+    this.apiUrl = (env.API_GATEWAY_URL || 'http://localhost:30900') + '/api/inventory';
+  }
 
   addInventory(request: InventoryRequest): Observable<void> {
     return this.http.post<void>(this.apiUrl, request);

@@ -20,9 +20,22 @@ spec:
         role: app
       containers:
         - name: frontend
-          image: YOUR_DOCKERHUB_USERNAME/frontend:latest  # replaced by deploy.sh
+          image: mabroukamessaoudi1/frontend:latest  # replaced by deploy.sh
           ports:
+            - containerPort: 443
             - containerPort: 80
+          env:
+            - name: API_GATEWAY_URL
+              value: "http://192.168.100.113:30900"
+            - name: KEYCLOAK_URL
+              value: "http://192.168.100.113:30818"
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: nginx.conf
+            - name: tls-certs
+              mountPath: /etc/nginx/certs
+              readOnly: true
           resources:
             requests:
               cpu: 50m
@@ -33,15 +46,25 @@ spec:
           readinessProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 443
+              scheme: HTTPS
             initialDelaySeconds: 10
             periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /health
-              port: 80
+              port: 443
+              scheme: HTTPS
             initialDelaySeconds: 15
             periodSeconds: 30
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: frontend-nginx-config
+        - name: tls-certs
+          secret:
+            secretName: frontend-tls
+
 ---
 apiVersion: v1
 kind: Service
@@ -53,6 +76,11 @@ spec:
     app: frontend
   type: NodePort
   ports:
-    - port: 80
-      targetPort: 80
+    - name: https
+      port: 443
+      targetPort: 443
       nodePort: 30200
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30201  # just for the HTTP→HTTPS redirect

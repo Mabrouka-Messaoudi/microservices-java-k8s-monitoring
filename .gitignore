@@ -8,3 +8,9 @@ scripts/secrets.env
 .DS_Store
 *.log
 kubectl
+
+# TLS certificates - never commit
+*.crt
+*.key
+tls.crt
+tls.key

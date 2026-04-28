@@ -1,18 +1,30 @@
 import { PassedInitialConfig } from 'angular-auth-oidc-client';
 
+const env = (window as any).__ENV__ || {};
+const keycloakUrl = env.KEYCLOAK_URL || 'http://192.168.100.113:30818';
+const apiGatewayUrl = env.API_GATEWAY_URL || 'https://192.168.100.113:30200';
+
 export const authConfig: PassedInitialConfig = {
   config: {
-    authority: 'http://10.10.10.11:30818/realms/spring-microservices-security-realm',
+    authority: `${keycloakUrl}/realms/spring-microservices-security-realm`,
     redirectUrl: window.location.origin,
     postLogoutRedirectUri: window.location.origin,
     clientId: 'angular-client',
-    scope: 'openid profile offline_access',
+    scope: 'openid profile email offline_access',
     responseType: 'code',
-    silentRenew: true,
+    silentRenew: false,
     useRefreshToken: true,
-    renewTimeBeforeTokenExpiresInSeconds: 30,
+    ignoreNonceAfterRefresh: true,
+    secureRoutes: [apiGatewayUrl],
+    disablePkce: false,
 
-    // Tell the interceptor to attach the Bearer token to these URLs
-    secureRoutes: ['http://10.10.10.11:30900'],
+    // ✅ Fix authenticated: false causé par sub mismatch
+    disableIdTokenValidation: true,
+    allowUnsafeReuseRefreshToken: true,
+
+    triggerAuthorizationResultEvent: true,
+    customParamsAuthRequest: {
+      prompt: 'login'
+    }
   }
-}
+};

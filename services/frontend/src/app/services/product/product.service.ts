@@ -8,14 +8,18 @@ import {Product} from "../../model/product";
 })
 export class ProductService {
 
+  private apiUrl: string;
+
   constructor(private httpClient: HttpClient) {
+    const env = (window as any).__ENV__ || {};
+    this.apiUrl = env.API_GATEWAY_URL || 'http://localhost:30900';
   }
 
   getProducts(): Observable<Array<Product>> {
-    return this.httpClient.get<Array<Product>>('http://10.10.10.11:30900/api/product');
+    return this.httpClient.get<Array<Product>>(`${this.apiUrl}/api/product`);
   }
 
   createProduct(product: Product): Observable<Product> {
-    return this.httpClient.post<Product>('http://10.10.10.11:30900/api/product', product);
+    return this.httpClient.post<Product>(`${this.apiUrl}/api/product`, product);
   }
 }
