@@ -109,15 +109,6 @@ Les fichiers `application.properties` de chaque service sont configurés pour un
 par des variables d'environnement définies dans les manifests (`k8s/apps/*`) et dans le ConfigMap
 `nexshop-config`.
 
-## Notes de sécurité et limites connues
-
-- Les identifiants de démonstration (MySQL, MongoDB, Keycloak) sont dans le dépôt : acceptable pour un projet
-  de test, à ne pas reproduire en production (utiliser un gestionnaire de secrets).
-- Le certificat TLS du frontend est auto-signé ; Keycloak et l'API Gateway sont exposés en HTTP sur NodePort.
-- Le CORS de l'API Gateway autorise toutes les origines (`*`) et les endpoints Swagger/Actuator listés dans
-  `SecurityConfig` sont publics.
-- Côté frontend, la validation de l'ID token est désactivée (voir le commentaire dans
-  `services/frontend/src/app/config/auth.config.ts`) : à retirer une fois Keycloak servi en HTTPS.
 
 ## Nettoyage
 
