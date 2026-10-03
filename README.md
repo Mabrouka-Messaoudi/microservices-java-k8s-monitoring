@@ -40,7 +40,8 @@ scripts/      build-push.sh, deploy.sh, teardown.sh, test-nexshop.sh, secrets.en
 
 ## Prérequis
 
-- Un cluster Kubernetes fonctionnel (testé avec 1 master + 2 workers) et `kubectl` configuré
+- Un cluster Kubernetes fonctionnel (testé avec 1 master + 3 workers, créé avec le dépôt
+  [`cluster-k8s`](https://github.com/Mabrouka-Messaoudi/cluster-k8s)) et `kubectl` configuré
 - Docker et un compte Docker Hub
 - `openssl` (génération du certificat TLS auto-signé du frontend)
 - Un compte [Mailtrap](https://mailtrap.io) (inbox de test pour le service de notification)
@@ -67,8 +68,8 @@ bash scripts/build-push.sh
 
 # 2. Déployer toute la plateforme
 export NODE_IP=192.168.100.113                 # IP d'un noeud du cluster
-export APP_NODES="k8s-worker1 k8s-worker2"     # noeuds applicatifs (voir : kubectl get nodes)
-export MONITORING_NODE=k8s-worker2             # noeud qui héberge le monitoring
+export APP_NODES="k8s2-worker2 k8s2-worker3"   # noeuds applicatifs (voir : kubectl get nodes)
+export MONITORING_NODE=k8s2-worker1            # noeud qui héberge le monitoring (exemple : adapter)
 bash scripts/deploy.sh
 ```
 
