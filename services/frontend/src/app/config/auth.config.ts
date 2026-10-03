@@ -1,8 +1,8 @@
 import { PassedInitialConfig } from 'angular-auth-oidc-client';
 
 const env = (window as any).__ENV__ || {};
-const keycloakUrl = env.KEYCLOAK_URL || 'http://192.168.100.113:30818';
-const apiGatewayUrl = env.API_GATEWAY_URL || 'https://192.168.100.113:30200';
+const keycloakUrl = env.KEYCLOAK_URL || 'http://localhost:30818';
+const apiGatewayUrl = env.API_GATEWAY_URL || 'http://localhost:30900';
 
 export const authConfig: PassedInitialConfig = {
   config: {
@@ -18,7 +18,9 @@ export const authConfig: PassedInitialConfig = {
     secureRoutes: [apiGatewayUrl],
     disablePkce: false,
 
-    // ✅ Fix authenticated: false causé par sub mismatch
+    // Limite connue : la validation de l'ID token est désactivée pour contourner une
+    // incohérence du claim « sub » avec Keycloak accessible en HTTP sur NodePort.
+    // En production : activer HTTPS partout (Keycloak inclus) et supprimer ces deux options.
     disableIdTokenValidation: true,
     allowUnsafeReuseRefreshToken: true,
 

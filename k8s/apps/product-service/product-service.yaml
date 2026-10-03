@@ -28,8 +28,18 @@ spec:
           ports:
             - containerPort: 8080
           env:
+            - name: MONGO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: root-username
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: root-password
             - name: SPRING_DATA_MONGODB_URI
-              value: "mongodb://root:password@mongodb:27017/product-service?authSource=admin&authMechanism=SCRAM-SHA-256"
+              value: "mongodb://$(MONGO_USERNAME):$(MONGO_PASSWORD)@mongodb:27017/product-service?authSource=admin&authMechanism=SCRAM-SHA-256"
             - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
               valueFrom:
                 configMapKeyRef:

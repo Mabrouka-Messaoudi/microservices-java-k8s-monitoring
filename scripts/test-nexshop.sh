@@ -5,7 +5,11 @@
 #  Usage: chmod +x test-nexshop.sh && ./test-nexshop.sh
 # ============================================================
 
-NODE_IP="192.168.100.113"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+[ -f "$SCRIPT_DIR/secrets.env" ] && { set -a; source "$SCRIPT_DIR/secrets.env"; set +a; }
+: "${NODE_IP:?Définir NODE_IP=<IP-d-un-noeud-du-cluster>}"
+: "${TEST_USERNAME:?Définir TEST_USERNAME dans scripts/secrets.env (utilisateur Keycloak de test)}"
+: "${TEST_PASSWORD:?Définir TEST_PASSWORD dans scripts/secrets.env}"
 GATEWAY="http://$NODE_IP:30900"
 KEYCLOAK="http://$NODE_IP:30818"
 REALM="spring-microservices-security-realm"
@@ -57,12 +61,12 @@ done < <(kubectl get pods -n nexshop --no-headers 2>/dev/null | grep -v "^$")
 
 # ============================================================
 separator
-info "ÉTAPE 2 — Obtention du token JWT (user: mab)"
+info "ÉTAPE 2 — Obtention du token JWT (utilisateur de test)"
 separator
 
 RESPONSE=$(curl -s -X POST "$KEYCLOAK/realms/$REALM/protocol/openid-connect/token" \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password&client_id=$CLIENT_ID&username=mab&password=***REMOVED***&scope=openid")
+  -d "grant_type=password&client_id=$CLIENT_ID&username=$TEST_USERNAME&password=$TEST_PASSWORD&scope=openid")
 
 TOKEN=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('access_token',''))" 2>/dev/null)
 
@@ -73,7 +77,7 @@ if [ -z "$TOKEN" ] || [ "$TOKEN" = "None" ]; then
 fi
 
 EXPIRES=$(echo "$RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin).get('expires_in','?'))" 2>/dev/null)
-pass "Token JWT obtenu pour 'mab' (expire dans ${EXPIRES}s)"
+pass "Token JWT obtenu pour '$TEST_USERNAME' (expire dans ${EXPIRES}s)"
 
 # Décoder les infos du token
 EMAIL=$(echo "$TOKEN" | cut -d'.' -f2 | base64 -d 2>/dev/null | python3 -c "import sys,json; p=json.load(sys.stdin); print(p.get('email','?'))" 2>/dev/null)

@@ -38,6 +38,6 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.oidcSecurityService
       .logoff()
-      .subscribe((result) => console.log(result));
+      .subscribe();
   }
 }

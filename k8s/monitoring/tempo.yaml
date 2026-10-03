@@ -54,7 +54,7 @@ spec:
         app: tempo
     spec:
       nodeSelector:
-        kubernetes.io/hostname: k8s-worker2   # same as prometheus, loki, grafana
+        role: monitoring   # nœud label par scripts/deploy.sh (MONITORING_NODE)
       containers:
         - name: tempo
           image: grafana/tempo:2.2.2

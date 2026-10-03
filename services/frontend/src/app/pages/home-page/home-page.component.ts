@@ -108,7 +108,6 @@ export class HomePageComponent implements OnInit {
           };
         } catch (e) { console.warn('token parse error', e); }
       }
-      console.log('User details from token:', userDetails);
 
       const order: Order = {
         skuCode: product.skuCode,

@@ -1,19 +1,56 @@
-# MicroservicesShopFrontend
+# NexShop – Frontend Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.0.2.
+Interface web de NexShop : liste des produits, commande, ajout de produit et de stock.
+Authentification via Keycloak (OpenID Connect, flux *Authorization Code* avec PKCE).
 
-## Development server
+Angular 18 (composants standalone) · TypeScript · Tailwind CSS · angular-auth-oidc-client
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Configuration à l'exécution
 
-## Screenshots
+L'application lit ses URLs dans `window.__ENV__`, un fichier `env.js` généré au démarrage du conteneur par
+`docker-entrypoint.sh` à partir de variables d'environnement :
 
-Home Page
+| Variable | Rôle | Valeur par défaut |
+|----------|------|-------------------|
+| `API_GATEWAY_URL` | URL de l'API Gateway | `http://localhost:30900` |
+| `KEYCLOAK_URL` | URL de Keycloak | `http://localhost:30818` |
 
-![img.png](screenshots/img.png)
+Ainsi la même image Docker fonctionne dans n'importe quel environnement. Sur Kubernetes, ces variables sont
+définies dans `k8s/apps/frontend/frontend.yaml` (l'adresse du noeud est injectée par `scripts/deploy.sh`).
 
-Add Product page
+## Développement local
 
-![img_1.png](screenshots/img_1.png)
+```bash
+npm install
+npm start        # http://localhost:4200
+```
 
-Refer to the detailed guide to setup the application along with Keycloak - https://programmingtechie.com/2024/06/09/spring-boot-microservices-tutorial-part-7/
+Sans `env.js`, les URLs par défaut ci-dessus sont utilisées. Pour pointer vers un autre backend en local,
+créer un fichier `public/env.js` (à ne pas commiter) :
+
+```js
+window.__ENV__ = { API_GATEWAY_URL: "http://localhost:9000", KEYCLOAK_URL: "http://localhost:8181" };
+```
+
+## Build et image Docker
+
+```bash
+npx ng build --configuration=production
+docker build -t <compte>/frontend:latest .
+```
+
+L'image est construite en deux étapes (build Angular puis nginx). La configuration nginx (HTTPS sur 443,
+redirection HTTP vers HTTPS, route `/health`) est fournie par le ConfigMap `configmap.yaml` ; le certificat
+TLS est monté depuis le secret `frontend-tls`.
+
+## Structure
+
+```
+src/app/
+├── config/        configuration OIDC (Keycloak)
+├── interceptor/   ajout du token Bearer aux requêtes vers l'API
+├── model/         interfaces Product et Order
+├── pages/         home-page, add-product, add-inventory
+├── services/      product, order, inventory
+└── shared/        header
+```

@@ -19,6 +19,7 @@ jobs:
           - inventory-service
           - notification-service
           - api-gateway
+          - frontend
 
     steps:
       - name: Checkout
